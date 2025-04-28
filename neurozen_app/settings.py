@@ -54,6 +54,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+AUTH_USER_MODEL = 'core.User'
+
 ROOT_URLCONF = 'neurozen_app.urls'
 
 TEMPLATES = [

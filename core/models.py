@@ -2,10 +2,10 @@ from datetime import timezone
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django.utils.translation import gettext_lazy as _
 
 
-class CustomUser(AbstractUser):
+
+class User(AbstractUser):
     theme = models.CharField(max_length=20, default='light', choices=[
         ('light', 'Light'),
         ('dark', 'Dark')
@@ -15,6 +15,7 @@ class CustomUser(AbstractUser):
         ('medium', 'Medium'),
         ('large', 'Large')
     ])
+
     enable_notifications = models.BooleanField(default=True)
     enable_sound = models.BooleanField(default=True)
 
@@ -40,19 +41,11 @@ class CustomUser(AbstractUser):
         ]
     )
 
-    groups = models.ManyToManyField(
-        'auth.Group',
-        related_name='customuser_set',
-        blank=True
-    )
-    user_permissions = models.ManyToManyField(
-        'auth.Permission',
-        related_name='customuser_permissions',
-        blank=True
-    )
+    groups = models.ManyToManyField('auth.Group', blank=True)
+    user_permissions = models.ManyToManyField('auth.Permission', blank=True)
 
     def __str__(self):
-        return self.username or self.email
+        return self.username
 
 
     def save(self, *args, **kwargs):
@@ -87,7 +80,7 @@ class Category(models.Model):
 
     name = models.CharField(max_length=50)
     color = models.CharField(max_length=7, default='#95A5A6')
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='categories')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='categories')
     is_default = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -146,7 +139,7 @@ class Task(models.Model):
 
 
 class PomodoroSession(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='pomodoro_sessions')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='pomodoro_sessions')
     task = models.ForeignKey(Task, on_delete=models.SET_NULL, null=True, blank=True)
     start_time = models.TimeField()
     end_time = models.TimeField(null=True, blank=True)
@@ -159,7 +152,7 @@ class PomodoroSession(models.Model):
 
 
 class Rewards(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='rewards')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='rewards')
     title = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     points = models.IntegerField(default=0)
@@ -202,7 +195,7 @@ class MoodEntry(models.Model):
         ('very_sad', 'Very Sad'),
     ]
 
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='mood_entries')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='mood_entries')
     mood = models.CharField(max_length=20, choices=MOOD_CHOICES)
     notes = models.TextField(blank=True)
     date = models.DateField(auto_now_add=True)
