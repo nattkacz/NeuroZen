@@ -4,6 +4,7 @@ from core.forms import UserRegisterForm
 
 
 
+
 def home(request):
     return render(request, 'core/home.html')
 
@@ -17,3 +18,6 @@ def register(request):
     else:
         form = UserRegisterForm()
     return render(request, 'core/register.html', {'form': form})
+
+def dashboard(request):
+    return render(request, 'core/dashboard.html')
