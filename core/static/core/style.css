@@ -38,16 +38,47 @@ body {
     box-shadow: 0 8px 15px rgba(38, 132, 255, 0.3);
 }
 
-.btn-cool-outline {
+.btn-outline {
     background-color: #f0f0f0;
     color: #333;
     border: 2px solid #6a11cb;
     transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.btn-cool-outline:hover {
+.btn-outline:hover {
     background: #6a11cb;
     color: white;
+}
+
+.form-control {
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    padding: 0.75rem 1rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-control:focus {
+    border-color: #6a11cb;
+    box-shadow: 0 0 0 0.2rem rgba(106, 17, 203, 0.25);
+}
+
+.form-label {
+    font-weight: 500;
+    color: #333;
+}
+
+.alert-danger {
+    background-color: #fff3f3;
+    border-color: #ffcdd2;
+    color: #c62828;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    margin-top: 0.5rem;
+}
+
+.form-text {
+    font-size: 0.875rem;
+    color: #666;
 }
 
 
