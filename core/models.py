@@ -198,6 +198,9 @@ class MoodEntry(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='mood_entries')
     mood = models.CharField(max_length=20, choices=MOOD_CHOICES)
     notes = models.TextField(blank=True)
+    water_intake = models.PositiveIntegerField(default=0, help_text="Cups of water drank")
+    exercised = models.BooleanField(default=False)
+    diet_summary = models.TextField(blank=True)
     date = models.DateField(auto_now_add=True)
     time = models.TimeField(auto_now_add=True)
 
