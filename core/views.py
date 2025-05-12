@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from core.forms import UserRegisterForm
 from core.models import Task, DailyQuote, MoodEntry
@@ -34,6 +34,9 @@ def login_view(request):
         form = AuthenticationForm()
     return render(request, 'core/login.html', {'form': form})
 
+def logout_view(request):
+    logout(request)
+    return redirect('home')
 
 @login_required
 def dashboard(request):
@@ -52,3 +55,4 @@ def dashboard(request):
         'quote': quote,
         'mood_entry': mood_entry,
     })
+
