@@ -1,10 +1,15 @@
 /* === GLOBAL === */
-html, body {
+html {
   height: 100%;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
   margin: 0;
   padding: 0;
 }
-
 
 /* === DASHBOARD === */
 .sidebar {
@@ -116,6 +121,34 @@ html, body {
   color: white;
 }
 
+
+.login-box {
+  max-width: 420px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* === LOGIN & AUTH PAGES === */
+.auth-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-grow: 1;
+  padding: 2rem;
+}
+
+
+/* === FOOTER === */
+
+
+.footer {
+  margin-top: auto;
+  padding: 1rem 0;
+  background-color: #f8f9fa;
+  text-align: center;
+  color: #777;
+  font-size: 0.9rem;
+}
 
 
 
