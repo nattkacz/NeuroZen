@@ -3,8 +3,9 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from core.forms import UserRegisterForm
-from core.models import Task, DailyQuote, MoodEntry
+from core.models import Task, DailyQuote, MoodEntry, PomodoroSession, Category, BreathingExercise
 from datetime import date
+from django.utils import timezone
 
 
 
@@ -41,18 +42,41 @@ def logout_view(request):
 @login_required
 def dashboard(request):
     user = request.user
-    tasks_today = Task.objects.filter(
+    today = date.today()
+
+    today_tasks = Task.objects.filter(
         category__user=user,
-        status='todo',
-        due_date=date.today()
-    )
+        due_date=today
+    ).order_by('priority', 'due_date')[:5]
+
+    all_tasks = Task.objects.filter(category__user=user)
+    completed_tasks = all_tasks.filter(status='completed').count()
+    pending_tasks = all_tasks.exclude(status='completed').count()
+
+
+    pomodoro_today = PomodoroSession.objects.filter(
+        user=user,
+        start_time__lte=timezone.now()
+    ).count()
+
+
+    mood_entry = MoodEntry.objects.filter(user=user, date=today).order_by('-time').first()
+
+    breathing_exercise = BreathingExercise.objects.filter(is_active=True).order_by('?').first()
     quote = DailyQuote.objects.filter(is_active=True).order_by('?').first()
-    mood_entry = MoodEntry.objects.filter(user=user, date=date.today())\
-                                   .order_by('-time').first()
+    categories = Category.objects.filter(user=user, is_active=True)
 
-    return render(request, 'core/dashboard.html', {
-        'tasks_count': tasks_today.count(),
-        'quote': quote,
+    context = {
+        'tasks': today_tasks,
+        'all_tasks_count': all_tasks.count(),
+        'completed_tasks_count': completed_tasks,
+        'pending_tasks_count': pending_tasks,
+        'pomodoro_sessions': pomodoro_today,
+        'streak_days': user.streak_days,
         'mood_entry': mood_entry,
-    })
+        'quote': quote,
+        'categories': categories,
+        'breathing_exercise': breathing_exercise,
+    }
 
+    return render(request, 'core/dashboard.html', context)

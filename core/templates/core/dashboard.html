@@ -24,7 +24,7 @@
       <div class="card flex-fill h-100">
         <div class="card-body text-center">
           <h5 class="card-title">Today's Tasks</h5>
-          <p class="card-text text-muted">You have {{ tasks_count }} task{{ tasks_count|pluralize }} due today.</p>
+          <p class="card-text text-muted">You have {{ tasks|length }} task{{ tasks|length|pluralize }} due today.</p>
           <a href="#" class="btn btn-outline btn-sm">View Tasks</a>
         </div>
       </div>
@@ -41,6 +41,27 @@
             </blockquote>
           {% else %}
             <p class="text-muted">No quote available today.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Breathing Exercise -->
+    <div class="col d-flex">
+      <div class="card flex-fill h-100 text-center">
+        <div class="card-body">
+          <h5 class="card-title">Breathing Exercise</h5>
+          {% if breathing_exercise %}
+            <h6>{{ breathing_exercise.title }}</h6>
+            <p class="text-muted">{{ breathing_exercise.description|truncatechars:100 }}</p>
+            <p>
+              <strong>Inhale:</strong> {{ breathing_exercise.inhale_duration }}s |
+              <strong>Hold:</strong> {{ breathing_exercise.hold_duration }}s |
+              <strong>Exhale:</strong> {{ breathing_exercise.exhale_duration }}s
+            </p>
+            <a href="#" class="btn btn-outline btn-sm">Start Exercise</a>
+          {% else %}
+            <p class="text-muted">No active breathing exercises found.</p>
           {% endif %}
         </div>
       </div>
@@ -72,12 +93,15 @@
       <div class="card flex-fill h-100 text-center">
         <div class="card-body">
           <h5 class="card-title">Your Progress</h5>
-          <p class="text-muted mb-1">Tasks completed: {{ user.total_completed_tasks }}</p>
-          <p class="text-muted mb-1">Pomodoros done: {{ user.total_pomodoro_sessions }}</p>
-          <p class="text-muted">Streak: {{ user.streak_days }} day{{ user.streak_days|pluralize }}</p>
+          <p class="text-muted mb-1">All Tasks: {{ all_tasks_count }}</p>
+          <p class="text-muted mb-1">Completed Tasks: {{ completed_tasks_count }}</p>
+          <p class="text-muted mb-1">Pending Tasks: {{ pending_tasks_count }}</p>
+          <p class="text-muted mb-1">Pomodoros Today: {{ pomodoro_sessions }}</p>
+          <p class="text-muted">Streak: {{ streak_days }} day{{ streak_days|pluralize }}</p>
         </div>
       </div>
     </div>
+
   </div>
 </div>
 {% endblock %}
