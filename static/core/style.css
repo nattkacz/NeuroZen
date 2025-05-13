@@ -156,7 +156,7 @@ body {
   width: 100px;
   height: 100px;
   border-radius: 50%;
-  background-color: #6c5ce7;
+  background-color: #a29bfe;
   animation: breathe 8s infinite;
   transition: all 0.3s ease-in-out;
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
