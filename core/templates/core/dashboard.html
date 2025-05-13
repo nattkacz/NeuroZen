@@ -50,22 +50,15 @@
     <div class="col d-flex">
       <div class="card flex-fill h-100 text-center">
         <div class="card-body">
-          <h5 class="card-title">Breathing Exercise</h5>
           {% if breathing_exercise %}
-            <h6>{{ breathing_exercise.title }}</h6>
-            <p class="text-muted">{{ breathing_exercise.description|truncatechars:100 }}</p>
-            <p>
-              <strong>Inhale:</strong> {{ breathing_exercise.inhale_duration }}s |
-              <strong>Hold:</strong> {{ breathing_exercise.hold_duration }}s |
-              <strong>Exhale:</strong> {{ breathing_exercise.exhale_duration }}s
-            </p>
-            <a href="#" class="btn btn-outline btn-sm">Start Exercise</a>
-          {% else %}
-            <p class="text-muted">No active breathing exercises found.</p>
+            <p class="text-muted fw-semibold">{{ breathing_exercise.title }}</p>
+            <p class="text-muted small mb-2">{{ breathing_exercise.inhale_duration }}s inhale • {{ breathing_exercise.hold_duration }}s hold • {{ breathing_exercise.exhale_duration }}s exhale</p>
+            <div id="breathing-circle" class="breathing-circle mx-auto my-3"></div>
           {% endif %}
         </div>
       </div>
     </div>
+
 
     <!-- Journal -->
     <div class="col d-flex">
