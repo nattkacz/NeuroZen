@@ -22,8 +22,8 @@
                 <strong>Priority:</strong> {{ task.priority }}{% if task.category %} • <strong>Category:</strong> {{ task.category }}{% endif %}
               </p>
               <div class="d-flex justify-content-between">
-                <a href="" class="btn btn-sm btn-outline-primary">Edit</a>
-                <a href="" class="btn btn-sm btn-outline-danger">Delete</a>
+                <a href="{% url 'task_edit' task.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                <a href="{% url 'task_delete' task.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
               </div>
             </div>
           </div>
