@@ -1,12 +1,13 @@
 {% extends 'base_dashboard.html' %}
-{% block title %}Your Tasks - NeuroZen{% endblock %}
+{% block title %}{{ category.name }} Tasks - NeuroZen{% endblock %}
 
 {% block content %}
 <div class="container-fluid px-4">
-  <h2 class="mb-4 text-center">🗂️ Your Tasks</h2>
+  <h2 class="mb-4 text-center"> {{ category.name }} </h2>
 
   <div class="text-end mb-3">
     <a href="{% url 'task_create' %}" class="btn btn-sm btn-primary">➕ Add Task</a>
+    <a href="{% url 'task_categories' %}" class="btn btn-sm btn-outline-secondary">← Back to Categories</a>
   </div>
 
   {% if tasks %}
@@ -16,11 +17,9 @@
           <div class="card flex-fill h-100">
             <div class="card-body">
               <h5 class="card-title">{{ task.title }}</h5>
-              <p class="card-text text-muted small mb-1">{{ task.description|default:"No description." }}</p>
-              <p class="text-muted small mb-1"><strong>Due:</strong> {{ task.due_date|date:"Y-m-d H:i" }}</p>
-              <p class="text-muted small mb-2">
-                <strong>Priority:</strong> {{ task.priority }}{% if task.category %} • <strong>Category:</strong> {{ task.category }}{% endif %}
-              </p>
+              <p class="text-muted">{{ task.description|default:"No description." }}</p>
+              <p class="text-muted small"><strong>Due:</strong> {{ task.due_date|date:"Y-m-d H:i" }}</p>
+              <p class="text-muted small"><strong>Priority:</strong> {{ task.priority }}</p>
               <div class="d-flex justify-content-between">
                 <a href="{% url 'task_edit' task.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
                 <a href="{% url 'task_delete' task.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
@@ -31,7 +30,7 @@
       {% endfor %}
     </div>
   {% else %}
-    <p class="text-muted text-center">No tasks yet. Add one to get started!</p>
+    <p class="text-muted text-center">No tasks in this category.</p>
   {% endif %}
 </div>
 {% endblock %}

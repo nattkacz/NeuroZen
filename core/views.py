@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from core.forms import UserRegisterForm, TaskForm
 from core.models import Task, DailyQuote, MoodEntry, PomodoroSession, Category, BreathingExercise
 from datetime import date
+from collections import defaultdict
 from django.utils import timezone
 
 
@@ -82,14 +83,31 @@ def dashboard(request):
     return render(request, 'core/dashboard.html', context)
 
 @login_required
-def task_list(request):
+def task_categories(request):
     user = request.user
-    tasks = Task.objects.filter(user=user).order_by('due_date', 'priority')
+    categories = Category.objects.filter(user=user, is_active=True)
+
+    category_data = []
+    for category in categories:
+        task_count = Task.objects.filter(user=user, category=category).count()
+        category_data.append({'category': category, 'task_count': task_count})
 
     context = {
-        'tasks': tasks,
+        'category_data': category_data
     }
-    return render(request, 'core/task_list.html', context)
+    return render(request, 'core/task_categories.html', context)
+
+@login_required
+def tasks_by_category(request, pk):
+    category = get_object_or_404(Category, pk=pk, user=request.user)
+    tasks = Task.objects.filter(user=request.user, category=category).order_by('due_date')
+
+    context = {
+        'category': category,
+        'tasks': tasks
+    }
+    return render(request, 'core/tasks_by_category.html', context)
+
 
 @login_required
 def task_create(request):
@@ -99,7 +117,7 @@ def task_create(request):
             task = form.save(commit=False)
             task.user = request.user
             task.save()
-            return redirect('task_list')
+            return redirect('tasks_by_category', pk=task.category.pk)
     else:
             form = TaskForm(user=request.user)
 
@@ -117,7 +135,7 @@ def task_edit(request, pk):
         form = TaskForm(request.POST, instance=task, user=request.user)
         if form.is_valid():
             form.save()
-            return redirect('task_list')
+            return redirect('tasks_by_category', pk=task.category.pk)
     else:
         form = TaskForm(instance=task, user=request.user)
 
@@ -133,7 +151,7 @@ def task_delete(request, pk):
 
     if request.method == 'POST':
         task.delete()
-        return redirect('task_list')
+        return redirect('tasks_by_category', pk=task.category.pk)
 
     context = {
         'task': task,
