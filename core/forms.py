@@ -13,19 +13,23 @@ class UserRegisterForm(UserCreationForm):
         fields = ('username', 'email', 'password1', 'password2')
 
 class   TaskForm(forms.ModelForm):
+    due_date = forms.DateTimeField(
+        widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+        input_formats=['%Y-%m-%dT%H:%M']
+    )
+
     class Meta:
         model = Task
-        fields = ['title', 'description', 'due_date', 'priority', 'category', 'tags']
+        fields = ['title', 'description', 'due_date', 'priority', 'category']
         widgets = {
-            'due_date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
             'description': forms.Textarea(attrs={'rows': 4}),
         }
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
-        if user is not None:
-            self.fields['category'].queryset = Category.objects.filter(is_active=True))
+        if user is not None and 'category' in self.fields:
+            self.fields['category'].queryset = Category.objects.filter(user=user, is_active=True)
 
 
 

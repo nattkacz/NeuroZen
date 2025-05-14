@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
-from core.forms import UserRegisterForm
+from core.forms import UserRegisterForm, TaskForm
 from core.models import Task, DailyQuote, MoodEntry, PomodoroSession, Category, BreathingExercise
 from datetime import date
 from django.utils import timezone
@@ -80,3 +80,30 @@ def dashboard(request):
     }
 
     return render(request, 'core/dashboard.html', context)
+
+@login_required
+def task_list(request):
+    user = request.user
+    tasks = Task.objects.filter(user=user).order_by('due_date', 'priority')
+
+    context = {
+        'tasks': tasks,
+    }
+    return render(request, 'core/task_list.html', context)
+
+@login_required
+def task_create(request):
+    if request.method == 'POST':
+        form = TaskForm(request.POST, user=request.user)
+        if form.is_valid():
+            task = form.save(commit=False)
+            task.user = request.user
+            task.save()
+            return redirect('task_list')
+    else:
+            form = TaskForm(user=request.user)
+
+    context = {
+        'form': form,
+    }
+    return render(request, 'core/task_form.html', context)

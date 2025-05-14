@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path
 from core import views
-from django.contrib.auth.views import LogoutView
+
 
 app_name = 'core'
 
@@ -12,4 +12,6 @@ urlpatterns = [
     path('dashboard/', views.dashboard, name='dashboard'),
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
+    path('tasks/', views.task_list, name='task_list'),
+    path('tasks/create/', views.task_create, name='task_create'),
 ]
