@@ -174,7 +174,7 @@ def start_pomodoro(request):
         session = PomodoroSession.objects.create(
             user=request.user,
             task=task,
-            start_time=timezone.now().time(),
+            start_time=timezone.now(),
             duration=25
         )
         return JsonResponse({'session_id': session.id})
@@ -187,10 +187,24 @@ def end_pomodoro(request):
         note = request.POST.get('note', '')
 
         session = get_object_or_404(PomodoroSession, id=session_id, user=request.user)
-        session.end_time = timezone.now().time()
+        session.end_time = timezone.now()
         session.completed = True
         if note:
             session.notes = note
         session.save()
         return JsonResponse({'status': 'saved'})
     return JsonResponse({'error': 'Invalid request'}, status=400)
+
+
+@login_required
+def pomodoro_history(request):
+    sessions = PomodoroSession.objects.filter(user=request.user, completed=True).order_by('-start_time')
+
+    history = defaultdict(list)
+    for session in sessions:
+        session_date = session.start_time.strftime('%Y-%m-%d')
+        history[session_date].append(session)
+
+    sorted_history = dict(sorted(history.items(), reverse=True))
+
+    return render(request, 'core/pomodoro_history.html', {'history': sorted_history})
