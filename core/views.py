@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout
@@ -157,3 +158,39 @@ def task_delete(request, pk):
         'task': task,
     }
     return render(request, 'core/task_confirm_delete.html', context)
+
+
+@login_required
+def pomodoro_view(request):
+    tasks = Task.objects.filter(user=request.user).order_by('-due_date')
+    return render(request, 'core/pomodoro.html', {'tasks': tasks})
+
+@login_required
+def start_pomodoro(request):
+    if request.method == 'POST':
+        task_id = request.POST.get('task_id')
+        task = Task.objects.filter(id=task_id, user=request.user).first() if task_id else None
+
+        session = PomodoroSession.objects.create(
+            user=request.user,
+            task=task,
+            start_time=timezone.now().time(),
+            duration=25
+        )
+        return JsonResponse({'session_id': session.id})
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+@login_required
+def end_pomodoro(request):
+    if request.method == 'POST':
+        session_id = request.POST.get('session_id')
+        note = request.POST.get('note', '')
+
+        session = get_object_or_404(PomodoroSession, id=session_id, user=request.user)
+        session.end_time = timezone.now().time()
+        session.completed = True
+        if note:
+            session.notes = note
+        session.save()
+        return JsonResponse({'status': 'saved'})
+    return JsonResponse({'error': 'Invalid request'}, status=400)
