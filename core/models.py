@@ -1,7 +1,6 @@
-from datetime import timezone
-
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils import timezone
 
 
 
@@ -142,8 +141,8 @@ class Task(models.Model):
 class PomodoroSession(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='pomodoro_sessions')
     task = models.ForeignKey(Task, on_delete=models.SET_NULL, null=True, blank=True)
-    start_time = models.TimeField()
-    end_time = models.TimeField(null=True, blank=True)
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField(null=True, blank=True)
     duration = models.IntegerField(help_text='Duration in minutes')
     completed = models.BooleanField(default=False)
     notes = models.TextField(blank=True)
