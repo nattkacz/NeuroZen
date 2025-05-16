@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
-from core.models import Category, Task
+from core.models import Category, Task, MoodEntry
 
 User = get_user_model()
 
@@ -32,7 +32,14 @@ class   TaskForm(forms.ModelForm):
             self.fields['category'].queryset = Category.objects.filter(user=user, is_active=True)
 
 
-
+class MoodEntryForm(forms.ModelForm):
+    class Meta:
+        model = MoodEntry
+        fields = ['mood', 'notes', 'water_intake', 'exercised', 'diet_summary']
+        widgets = {
+            'notes': forms.Textarea(attrs={'rows': 3}),
+            'diet_summary': forms.Textarea(attrs={'rows': 2}),
+        }
 
 
 
