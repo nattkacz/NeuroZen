@@ -21,4 +21,8 @@ urlpatterns = [
     path('pomodoro/start/', views.start_pomodoro, name='start_pomodoro'),
     path('pomodoro/end/', views.end_pomodoro, name='end_pomodoro'),
     path('pomodoro/history/', views.pomodoro_history, name='pomodoro_history'),
+    path('journal/', views.journal_view, name='journal_view'),
+    path('journal/history', views.journal_history, name='journal_history'),
+    path('journal/<int:pk>/edit/', views.journal_edit, name='journal_edit'),
+
 ]

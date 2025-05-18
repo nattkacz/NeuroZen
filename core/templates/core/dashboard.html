@@ -75,7 +75,10 @@
             <p class="text-muted">No journal entry yet for today.</p>
           {% endif %}
           <div class="text-end mt-2">
-            <a href="#" class="btn btn-sm btn-outline-primary">Edit Journal</a>
+            <a href="{% url 'journal_view' %}" class="btn btn-sm btn-outline-primary">
+                {% if mood_entry %}Edit Journal{% else %}Add Journal Entry{% endif %}
+<           </a>
+            <a href="{% url 'journal_history' %}" class="btn btn-sm btn-outline-secondary"> View History</a>
           </div>
         </div>
       </div>

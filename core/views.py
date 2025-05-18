@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
-from core.forms import UserRegisterForm, TaskForm
+from core.forms import UserRegisterForm, TaskForm, MoodEntryForm
 from core.models import Task, DailyQuote, MoodEntry, PomodoroSession, Category, BreathingExercise
 from datetime import date
 from collections import defaultdict
@@ -208,3 +208,41 @@ def pomodoro_history(request):
     sorted_history = dict(sorted(history.items(), reverse=True))
 
     return render(request, 'core/pomodoro_history.html', {'history': sorted_history})
+
+
+@login_required
+def journal_view(request):
+    today = timezone.now().date()
+    mood_entry, _ = MoodEntry.objects.get_or_create(user=request.user, date=today)
+
+    if request.method == 'POST':
+        form = MoodEntryForm(request.POST, instance=mood_entry)
+        if form.is_valid():
+            form.save()
+            return redirect('journal_history')
+
+    else:
+        form = MoodEntryForm(instance=mood_entry)
+
+    return render(request, 'core/journal.html', {'form': form})
+
+
+@login_required
+def journal_history(request):
+    entries = MoodEntry.objects.filter(user=request.user).order_by('-date', '-time')
+    return render(request, 'core/journal_history.html', {'entries': entries})
+
+
+@login_required
+def journal_edit(request, pk):
+    entry = get_object_or_404(MoodEntry, pk=pk, user=request.user)
+
+    if request.method == 'POST':
+        form = MoodEntryForm(request.POST, instance=entry)
+        if form.is_valid():
+            form.save()
+            return redirect('journal_history')
+    else:
+        form = MoodEntryForm(instance=entry)
+
+    return render(request, 'core/journal.html', {'form': form})
