@@ -3,7 +3,8 @@
 
 {% block content %}
 <div class="container-fluid px-4">
-  <h2 class="mb-4 text-center">Pomodoro Session</h2>
+  <h2 class="mb-4 text-center"> Pomodoro Session</h2>
+  <a href="{% url 'dashboard' %}" class="btn btn-sm btn-outline-secondary">← Back </a>
 
   <form id="sessionForm" class="text-center">
     <div class="mb-3" style="max-width: 400px; margin: 0 auto;">
@@ -23,12 +24,9 @@
       <button type="button" id="stopBtn" class="btn btn-lg btn-outline-danger ms-2" style="display: none;">Stop & Save</button>
     </div>
 
-    <div class="text-center mb-5">
-        <a href="{% url 'pomodoro_history' %}" class="btn btn-sm btn-outline-secondary">
-            View History
-        </a>
+    <div class="text-center mb-4">
+      <a href="{% url 'pomodoro_history' %}" class="btn btn-sm btn-outline-secondary">View History</a>
     </div>
-
   </form>
 
   <div id="noteSection" style="display:none; max-width: 500px; margin: 0 auto;">
@@ -37,7 +35,7 @@
       <label for="noteInput" class="form-label">Add a note (optional):</label>
       <textarea id="noteInput" class="form-control" rows="3"></textarea>
     </div>
-    <button id="saveNoteBtn" class="btn btn-success w-100">Save Note</button>
+    <button id="saveNoteBtn" class="btn btn-success w-100">Save</button>
   </div>
 </div>
 
@@ -61,24 +59,10 @@
     timerDisplay.textContent = `${min}:${sec}`;
   }
 
-  function endSession() {
-  const note = noteInput.value;
-
-  fetch("{% url 'end_pomodoro' %}", {
-    method: 'POST',
-    headers: {
-      'X-CSRFToken': '{{ csrf_token }}',
-      'Content-Type': 'application/x-www-form-urlencoded'
-    },
-    body: `session_id=${sessionId}&note=${encodeURIComponent(note)}`
-  })
-  .then(() => {
+  function showNoteSection() {
     noteSection.style.display = 'block';
     stopBtn.disabled = true;
-    saveNoteBtn.textContent = 'Note saved!';
-    saveNoteBtn.disabled = true;
-  });
-}
+  }
 
   startBtn.addEventListener('click', () => {
     const taskId = taskSelect.value;
@@ -102,7 +86,7 @@
         updateDisplay();
         if (timer <= 0) {
           clearInterval(interval);
-          endSession();
+          showNoteSection();
         }
       }, 1000);
     });
@@ -110,10 +94,27 @@
 
   stopBtn.addEventListener('click', () => {
     clearInterval(interval);
-    endSession();
+    showNoteSection();
   });
 
+  saveNoteBtn.addEventListener('click', () => {
+    const note = noteInput.value;
+
+    fetch("{% url 'end_pomodoro' %}", {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}',
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: `session_id=${sessionId}&note=${encodeURIComponent(note)}`
+    })
+    .then(() => {
+      saveNoteBtn.textContent = 'Saved!';
+      saveNoteBtn.disabled = true;
+    });
+  });
 
   updateDisplay();
 </script>
 {% endblock %}
+

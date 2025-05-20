@@ -3,12 +3,14 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
-from core.forms import UserRegisterForm, TaskForm, MoodEntryForm
-from core.models import Task, DailyQuote, MoodEntry, PomodoroSession, Category, BreathingExercise
+from core.forms import UserRegisterForm, TaskForm, MoodEntryForm, RewardForm
+from core.models import Task, DailyQuote, MoodEntry, PomodoroSession, Category, BreathingExercise, Rewards
 from datetime import date
 from collections import defaultdict
+from django.contrib import messages
 from django.utils import timezone
-
+from django.utils.timezone import localdate
+from django.db.models import Sum
 
 
 def home(request):
@@ -41,38 +43,40 @@ def logout_view(request):
     logout(request)
     return redirect('home')
 
+
 @login_required
 def dashboard(request):
     user = request.user
-    today = date.today()
+    today = localdate()
 
-    today_tasks = Task.objects.filter(
+    # Zadania na dziś
+    today_tasks_qs = Task.objects.filter(
         category__user=user,
-        due_date=today
-    ).order_by('priority', 'due_date')[:5]
+        due_date__date=today
+    ).order_by('priority', 'due_date')
 
-    all_tasks = Task.objects.filter(category__user=user)
-    completed_tasks = all_tasks.filter(status='completed').count()
-    pending_tasks = all_tasks.exclude(status='completed').count()
+    today_tasks = today_tasks_qs[:5]  # tylko do podglądu
 
+    completed_today = today_tasks_qs.filter(status='completed')
+    pending_overall = Task.objects.filter(category__user=user).exclude(status='completed')
 
     pomodoro_today = PomodoroSession.objects.filter(
         user=user,
-        start_time__lte=timezone.now()
+        start_time__date=today
     ).count()
 
-
     mood_entry = MoodEntry.objects.filter(user=user, date=today).order_by('-time').first()
-
     breathing_exercise = BreathingExercise.objects.filter(is_active=True).order_by('?').first()
     quote = DailyQuote.objects.filter(is_active=True).order_by('?').first()
     categories = Category.objects.filter(user=user, is_active=True)
 
     context = {
-        'tasks': today_tasks,
-        'all_tasks_count': all_tasks.count(),
-        'completed_tasks_count': completed_tasks,
-        'pending_tasks_count': pending_tasks,
+        'today_tasks': today_tasks,
+        'today_tasks_count': today_tasks_qs.count(),
+        'completed_today_count': completed_today.count(),
+        'pending_tasks_count': pending_overall.count(),  # ogólna liczba zadań oczekujących
+
+        'total_points': user.points,  # ogólna suma punktów
         'pomodoro_sessions': pomodoro_today,
         'streak_days': user.streak_days,
         'mood_entry': mood_entry,
@@ -82,6 +86,7 @@ def dashboard(request):
     }
 
     return render(request, 'core/dashboard.html', context)
+
 
 @login_required
 def task_categories(request):
@@ -101,11 +106,18 @@ def task_categories(request):
 @login_required
 def tasks_by_category(request, pk):
     category = get_object_or_404(Category, pk=pk, user=request.user)
-    tasks = Task.objects.filter(user=request.user, category=category).order_by('due_date')
+
+    tasks = Task.objects.filter(user=request.user, category=category)
+
+    grouped_tasks = {
+        'To Do': tasks.filter(status='todo').order_by('due_date'),
+        'In Progress': tasks.filter(status='in_progress').order_by('due_date'),
+        'Completed': tasks.filter(status='completed').order_by('due_date'),
+    }
 
     context = {
         'category': category,
-        'tasks': tasks
+        'grouped_tasks': grouped_tasks
     }
     return render(request, 'core/tasks_by_category.html', context)
 
@@ -161,8 +173,31 @@ def task_delete(request, pk):
 
 
 @login_required
+def task_complete(request, pk):
+    task = get_object_or_404(Task, pk=pk, user=request.user)
+
+    if task.status != 'completed':
+        task.status = 'completed'
+        task.save()
+
+        request.user.points += task.points
+        request.user.total_completed_tasks += 1
+        request.user.save()
+
+        messages.success(request, f"Task completed! You earned {task.points} points.")
+    else:
+        messages.info(request, "This task is already completed.")
+
+    return redirect('tasks_by_category', pk=task.category.pk)
+
+
+
+@login_required
 def pomodoro_view(request):
-    tasks = Task.objects.filter(user=request.user).order_by('-due_date')
+    tasks = Task.objects.filter(
+        user=request.user
+    ).exclude(status='completed').order_by('-due_date')
+
     return render(request, 'core/pomodoro.html', {'tasks': tasks})
 
 @login_required
@@ -246,3 +281,76 @@ def journal_edit(request, pk):
         form = MoodEntryForm(instance=entry)
 
     return render(request, 'core/journal.html', {'form': form})
+
+@login_required
+def journal_delete(request, pk):
+    journal = get_object_or_404(MoodEntry, pk=pk, user=request.user)
+
+    if request.method == 'POST':
+        journal.delete()
+        return redirect('journal_history')
+
+    return render(request, 'core/journal_delete.html', {'journal': journal})
+
+
+
+@login_required
+def reward_create(request):
+    if request.method == 'POST':
+        form = RewardForm(request.POST)
+        if form.is_valid():
+            reward = form.save(commit=False)
+            reward.user = request.user
+            reward.save()
+            return redirect('reward_list')
+    else:
+        form = RewardForm()
+    return render(request, 'core/reward_form.html', {'form': form})
+
+@login_required
+def reward_list(request):
+    rewards = Rewards.objects.filter(user=request.user, is_active=True)
+    return render(request, 'core/reward_list.html', {'rewards': rewards})
+
+
+@login_required
+def reward_edit(request, pk):
+    reward = get_object_or_404(Rewards, pk=pk, user=request.user)
+    if request.method == 'POST':
+        form = RewardForm(request.POST, instance=reward)
+        if form.is_valid():
+            form.save()
+            return redirect('reward_list')
+    else:
+        form = RewardForm(instance=reward)
+    return render(request, 'core/reward_form.html', {'form': form})
+
+
+@login_required
+def reward_delete(request, pk):
+    reward = get_object_or_404(Rewards, pk=pk, user=request.user)
+    if request.method == 'POST':
+        reward.delete()
+        return redirect('reward_list')
+    return render(request, 'core/reward_delete.html', {'reward': reward})
+
+@login_required
+def reward_claim(request, pk):
+    reward = get_object_or_404(Rewards, pk=pk, user=request.user)
+
+    if reward.is_claimed:
+        messages.info(request, "You already claimed this reward.")
+    elif request.user.points >= reward.points:
+        request.user.points -= reward.points
+        request.user.save()
+
+        reward.is_claimed = True
+
+        reward.claimed_at = timezone.now()
+        reward.save()
+
+        messages.success(request, "ENJOY")
+    else:
+        messages.error(request, "Not enough points to claim this reward.")
+
+    return redirect('reward_list')

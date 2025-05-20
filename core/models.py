@@ -15,6 +15,8 @@ class User(AbstractUser):
         ('large', 'Large')
     ])
 
+    points = models.PositiveIntegerField(default=0, help_text="Total reward points collected by the user.")
+
     enable_notifications = models.BooleanField(default=True)
     enable_sound = models.BooleanField(default=True)
 
@@ -124,6 +126,7 @@ class Task(models.Model):
     priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='tasks')
+    points = models.PositiveIntegerField(default=10, help_text="Points awarded when this task is completed.")
     created_at = models.DateTimeField(auto_now_add=True)
     completed_at = models.DateTimeField(null=True, blank=True)
     estimated_completed_at = models.DateTimeField(null=True, blank=True, help_text='Estimated time in minutes')
@@ -156,6 +159,8 @@ class Rewards(models.Model):
     title = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     points = models.IntegerField(default=0)
+    is_claimed = models.BooleanField(default=False)
+    claimed_at = models.DateTimeField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

@@ -1,0 +1,15 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}Delete Reward - NeuroZen{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="alert alert-danger text-center">
+    <h4>Are you sure you want to delete "{{ reward.title }}"?</h4>
+    <form method="post">
+      {% csrf_token %}
+      <a href="{% url 'reward_list' %}" class="btn btn-secondary me-2">Cancel</a>
+      <button type="submit" class="btn btn-danger">Delete</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

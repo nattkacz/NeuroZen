@@ -24,13 +24,14 @@
       <div class="card flex-fill h-100">
         <div class="card-body text-center">
           <h5 class="card-title">Today's Tasks</h5>
-          <p class="card-text text-muted">You have {{ tasks|length }} task{{ tasks|length|pluralize }} due today.</p>
+          <p class="card-text text-muted">You have {{ today_tasks|length }} task{{ today_tasks|length|pluralize }} due today.</p>
           <a href="{% url 'task_categories' %}" class="btn btn-outline btn-sm">View Tasks</a>
         </div>
       </div>
     </div>
 
     <!-- Daily Quote -->
+
     <div class="col d-flex">
       <div class="card flex-fill h-100">
         <div class="card-body text-center">
@@ -69,7 +70,7 @@
             <p><strong>Mood:</strong> {{ mood_entry.get_mood_display }}</p>
             <p><strong>Water intake:</strong> {{ mood_entry.water_intake }} cups</p>
             <p><strong>Exercised:</strong> {{ mood_entry.exercised|yesno:"Yes,No" }}</p>
-            <p><strong>Diet:</strong> {{ mood_entry.diet_summary|default:"No entry" }}</p>
+            <p><strong>Diet:</strong> {{ mood_entry.diet_summary }}</p>
             <p><strong>Notes:</strong> {{ mood_entry.notes|truncatechars:100 }}</p>
           {% else %}
             <p class="text-muted">No journal entry yet for today.</p>
@@ -84,19 +85,23 @@
       </div>
     </div>
 
-    <!-- Progress -->
+   <!-- Progress -->
     <div class="col d-flex">
       <div class="card flex-fill h-100 text-center">
         <div class="card-body">
           <h5 class="card-title">Your Progress</h5>
-          <p class="text-muted mb-1">All Tasks: {{ all_tasks_count }}</p>
-          <p class="text-muted mb-1">Completed Tasks: {{ completed_tasks_count }}</p>
-          <p class="text-muted mb-1">Pending Tasks: {{ pending_tasks_count }}</p>
+            <a href="{% url 'daily_summary' %}" class="btn btn-outline-info mt-4"> Podsumuj dzień</a>
+
+          <p class="text-muted mb-1">Completed {{ completed_today_count }} of {{ today_tasks_count }} tasks today</p>
+          <p class="text-muted mb-1">Pending Tasks (total): {{ pending_tasks_count }}</p>
+          <p class="text-muted mb-1">Total Points: {{ total_points }}</p>
           <p class="text-muted mb-1">Pomodoros Today: {{ pomodoro_sessions }}</p>
           <p class="text-muted">Streak: {{ streak_days }} day{{ streak_days|pluralize }}</p>
         </div>
       </div>
     </div>
+
+
 
   </div>
 </div>

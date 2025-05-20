@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
-from core.models import Category, Task, MoodEntry
+from core.models import Category, Task, MoodEntry, Rewards
 
 User = get_user_model()
 
@@ -20,7 +20,7 @@ class   TaskForm(forms.ModelForm):
 
     class Meta:
         model = Task
-        fields = ['title', 'description', 'due_date', 'priority', 'category']
+        fields = ['title', 'description', 'due_date', 'priority', 'category', 'status', 'points']
         widgets = {
             'description': forms.Textarea(attrs={'rows': 4}),
         }
@@ -42,4 +42,10 @@ class MoodEntryForm(forms.ModelForm):
         }
 
 
-
+class RewardForm(forms.ModelForm):
+    class Meta:
+        model = Rewards
+        fields = ['title', 'description', 'points']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 3}),
+        }
