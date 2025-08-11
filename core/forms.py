@@ -49,3 +49,14 @@ class RewardForm(forms.ModelForm):
         widgets = {
             'description': forms.Textarea(attrs={'rows': 3}),
         }
+
+
+class SettingsForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = [
+            'focus_time', 'break_time', 'daily_goal',
+            'enable_notifications', 'enable_sound',
+            'reminder_frequency',
+            'preferred_working_hours_start', 'preferred_working_hours_end',
+        ]

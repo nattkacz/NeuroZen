@@ -1,0 +1,17 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}Summary's day{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h2 class="text-center mb-4">Your summary</h2>
+  <div class="card">
+    <div class="card-body">
+      <p style="white-space: pre-wrap;">{{ ai_summary }}</p>
+    </div>
+  </div>
+
+  <div class="text-center mt-4">
+    <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">← Back</a>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}Summary history{% endblock %}
+
+{% block content %}
+<div class="container px-4">
+  <h2 class="mb-4 text-center">Your AI summaries</h2>
+
+  <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary mb-3">← Back </a>
+
+
+  <form method="get" class="mb-4">
+    <div class="input-group" style="max-width: 300px; margin: 0 auto;">
+      <input type="date" name="date" class="form-control" value="{{ date }}">
+      <button type="submit" class="btn btn-outline-primary">Search</button>
+    </div>
+  </form>
+
+  {% if summaries %}
+    <div class="list-group">
+      {% for item in summaries %}
+        <div class="list-group-item mb-3">
+          <h5 class="mb-1">{{ item.date }}</h5>
+          <p class="mb-0">{{ item.content }}</p>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-muted text-center">No summaries available{% if date %} for {{ date }}{% endif %}.</p>
+  {% endif %}
+</div>
+{% endblock %}
+

@@ -1,0 +1,129 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}All Tasks{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+  <h2 class="mb-4 text-center">All Tasks</h2>
+
+
+  <form method="get" class="mb-4">
+    <div class="row g-3 align-items-end">
+
+      <div class="col-md-4">
+        <label class="form-label">Search</label>
+        <div class="input-group">
+          <span class="input-group-text">🔍</span>
+          <input type="text" name="q" class="form-control" placeholder="Search..." value="{{ search|default_if_none:'' }}">
+        </div>
+      </div>
+
+
+      <div class="col-md-3">
+        <label class="form-label">Date</label>
+        <input type="date" name="date" class="form-control" value="{{ selected_date }}">
+      </div>
+
+
+      <div class="col-md-2">
+        <button type="submit" class="btn btn-outline btn-sm w-100">Filter</button>
+      </div>
+
+
+      <div class="col-md-3 text-end">
+        <p class="text-muted mb-0 mt-2"><strong>{{ tasks|length }}</strong> tasks found</p>
+      </div>
+    </div>
+
+
+      <div class="text-end mb-3">
+        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">← Back</a>
+        <a href="{% url 'task_create' %}" class="btn btn-outline btn-sm">Add Task</a>
+      </div>
+
+    <hr>
+
+
+    <div class="mb-3">
+      <label class="form-label">Status:</label><br>
+      {% for value, label in status_options %}
+        <label class="me-3">
+          <input type="checkbox" name="status" value="{{ value }}" {% if value in selected_status %}checked{% endif %}>
+          {{ label }}
+        </label>
+      {% endfor %}
+    </div>
+
+
+    <div class="mb-3">
+      <label class="form-label">Category:</label><br>
+      {% for category in categories %}
+        <label class="me-3">
+          <input type="checkbox" name="category" value="{{ category.id }}" {% if category.id|stringformat:"s" in selected_categories %}checked{% endif %}>
+          {{ category }}
+        </label>
+      {% endfor %}
+    </div>
+
+
+    <div class="mb-3">
+      <label><input type="checkbox" name="group" {% if group_by_category %}checked{% endif %}> Group by Category</label>
+    </div>
+  </form>
+
+
+  {% if group_by_category %}
+    {% for cat, group_tasks in grouped_tasks.items %}
+      <h4 class="mt-4">{{ cat }}</h4>
+      {% if group_tasks %}
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+          {% for task in group_tasks %}
+            <div class="col d-flex">
+              <div class="card flex-fill h-100">
+                <div class="card-body">
+                  <h5 class="card-title">{{ task.title }}</h5>
+                  <p><strong>Status:</strong> {{ task.get_status_display}}</p>
+                  <p><strong>Category:</strong> {{ task.category }}</p>
+                  <p><strong>Due:</strong> {{ task.due_date|date:"Y-m-d H:i" }}</p>
+                  <div class="d-flex justify-content-between mt-2">
+                    <a href="{% url 'task_edit' task.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                    <a href="{% url 'task_delete' task.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                    <a href="{% url 'task_complete' task.pk %}" class="btn btn-sm btn-success">Done</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-muted">No tasks in this category.</p>
+      {% endif %}
+    {% endfor %}
+  {% else %}
+    {% if tasks %}
+      <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for task in tasks %}
+          <div class="col d-flex">
+            <div class="card flex-fill h-100">
+              <div class="card-body">
+                <h5 class="card-title">{{ task.title }}</h5>
+                <p><strong>Status:</strong> {{ task.status }}</p>
+                <p><strong>Category:</strong> {{ task.category }}</p>
+                <p><strong>Due:</strong> {{ task.due_date|date:"Y-m-d H:i" }}</p>
+                <div class="d-flex justify-content-between mt-2">
+                  <a href="{% url 'task_edit' task.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                  <a href="{% url 'task_delete' task.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                   <a href="{% url 'task_complete' task.pk %}" class="btn btn-sm btn-success">Done</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-muted">No tasks found.</p>
+    {% endif %}
+  {% endif %}
+</div>
+{% endblock %}
+
+

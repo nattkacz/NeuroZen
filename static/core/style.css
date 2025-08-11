@@ -157,19 +157,58 @@ body {
   height: 100px;
   border-radius: 50%;
   background-color: #a29bfe;
-  animation: breathe 8s infinite;
+  animation: breathe 12s infinite;
   transition: all 0.3s ease-in-out;
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
-
 @keyframes breathe {
-  0%   { transform: scale(1); }
-  25%  { transform: scale(1.2); }
-  50%  { transform: scale(1.4); }
-  75%  { transform: scale(1.2); }
-  100% { transform: scale(1); }
+  0%      { transform: scale(1); }
+  33.33%  { transform: scale(1.4); }
+  50%     { transform: scale(1.4); }
+  66.66%  { transform: scale(1.4); }
+  100%    { transform: scale(1); }
 }
+.toast-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2000;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+
+.toast {
+  position: relative;
+  min-width: 500px;
+  max-width: 700px;
+  padding: 2rem 2.5rem;
+  font-size: 1.6rem;
+  font-weight: 600;
+  background-color: rgba(255, 239, 201, 0.95) !important;
+  color: #3b3b3b;
+  border-radius: 16px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.4s ease-in-out;
+  pointer-events: auto;
+  text-align: center;
+}
+
+.toast-body {
+  padding: 0;
+  margin: 0;
+}
+
+.btn-close {
+  background: none;
+  filter: none;
+}
+
+
+
 
 
 

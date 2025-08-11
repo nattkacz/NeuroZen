@@ -1,0 +1,26 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}Today's Focus Tasks - NeuroZen{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-4 text-center">Your Tasks in Preferred Work Hours</h2>
+    <div class="text-end mb-4">
+    <a href="{% url 'dashboard' %}" class="btn btn-outline-primary">← Back</a>
+    </div>
+  {% if tasks %}
+    <ul class="list-group">
+      {% for task in tasks %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <div>
+            <strong>{{ task.title }}</strong><br>
+            <small class="text-muted">Due: {{ task.due_date|date:"H:i" }}</small>
+          </div>
+          <span class="badge bg-primary rounded-pill">{{ task.get_priority_display }}</span>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="text-muted text-center">No tasks scheduled within your working hours today </p>
+  {% endif %}
+</div>
+{% endblock %}

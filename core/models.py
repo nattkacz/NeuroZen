@@ -5,15 +5,6 @@ from django.utils import timezone
 
 
 class User(AbstractUser):
-    theme = models.CharField(max_length=20, default='light', choices=[
-        ('light', 'Light'),
-        ('dark', 'Dark')
-    ])
-    font_size = models.CharField(max_length=20, default='medium', choices=[
-        ('small', 'Small'),
-        ('medium', 'Medium'),
-        ('large', 'Large')
-    ])
 
     points = models.PositiveIntegerField(default=0, help_text="Total reward points collected by the user.")
 
@@ -68,19 +59,8 @@ class Category(models.Model):
         ('other', 'Other'),
     ]
 
-    DEFAULT_COLORS = {
-        'work': '#FF6B6B',
-        'study': '#4ECDC4',
-        'personal': '#45B7D1',
-        'health': '#96CEB4',
-        'social': '#FFEEAD',
-        'hobby': '#D4A5A5',
-        'self_care': '#9B59B6',
-        'other': '#95A5A6',
-    }
 
     name = models.CharField(max_length=50)
-    color = models.CharField(max_length=7, default='#95A5A6')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='categories')
     is_default = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
@@ -92,14 +72,16 @@ class Category(models.Model):
         unique_together = ['name', 'user']
 
     def __str__(self):
-        return f"{self.name}"
+        for value, display in self.CATEGORY_CHOICES:
+            if self.name == value:
+                return display
+        return self.name.replace('_', ' ').title()
 
     @classmethod
     def create_default_categories(cls, user):
         for category_name, _ in cls.CATEGORY_CHOICES:
             cls.objects.create(
                 name=category_name,
-                color=cls.DEFAULT_COLORS.get(category_name, '#95A5A6'),
                 user=user,
                 is_default=True,
                 is_active=True
@@ -129,8 +111,7 @@ class Task(models.Model):
     points = models.PositiveIntegerField(default=10, help_text="Points awarded when this task is completed.")
     created_at = models.DateTimeField(auto_now_add=True)
     completed_at = models.DateTimeField(null=True, blank=True)
-    estimated_completed_at = models.DateTimeField(null=True, blank=True, help_text='Estimated time in minutes')
-    actual_completed_at = models.DateTimeField(null=True, blank=True, help_text='Actual time in minutes')
+
 
     def __str__(self):
         return f"{self.title}"
@@ -211,3 +192,16 @@ class MoodEntry(models.Model):
 
     def __str__(self):
         return f"{self.get_mood_display()} - {self.user.username} - {self.date}"
+
+
+class AISummary(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    date = models.DateField()
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'date')
+
+    def __str__(self):
+        return f"Summary for {self.user} on {self.date}"
