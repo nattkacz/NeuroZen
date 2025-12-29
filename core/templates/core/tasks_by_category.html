@@ -1,0 +1,50 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}{{ category.name }} Tasks - NeuroZen{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+  <h2 class="mb-4 text-center">{{ category.name }}</h2>
+  <a href="{% url 'dashboard' %}" class="btn btn-sm btn-outline-secondary">← Back </a>
+
+  <div class="text-end mb-3">
+    <a href="{% url 'task_create' %}" class="btn btn-sm btn-primary">➕ Add Task</a>
+    <a href="{% url 'task_categories' %}" class="btn btn-sm btn-outline-secondary">← Back to Categories</a>
+  </div>
+
+  {% if grouped_tasks %}
+    {% for status, tasks in grouped_tasks.items %}
+      <h4 class="mt-5">{{ status }}</h4>
+      {% if tasks %}
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+          {% for task in tasks %}
+            <div class="col d-flex">
+              <div class="card flex-fill h-100">
+                <div class="card-body">
+                  <h5 class="card-title">{{ task.title }}</h5>
+                  <p class="text-muted">{{ task.description|default:"No description." }}</p>
+                  <p class="text-muted small"><strong>Due:</strong> {{ task.due_date|date:"Y-m-d H:i" }}</p>
+                  <p class="text-muted small"><strong>Priority:</strong> {{ task.priority }}</p>
+                  <p class="text-muted small"><strong>Points:</strong> {{ task.points }}</p>
+                  <div class="d-flex justify-content-between">
+                    <a href="{% url 'task_edit' task.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                    <a href="{% url 'task_delete' task.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                      <a href="{% url 'task_complete' task.pk %}" class="btn btn-sm btn-success">✔ Done</a>
+
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-muted">No tasks in "{{ status }}"</p>
+      {% endif %}
+    {% endfor %}
+  {% else %}
+    <p class="text-muted text-center">No tasks in this category.</p>
+  {% endif %}
+</div>
+{% endblock %}
+
+
+

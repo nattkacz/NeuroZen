@@ -1,0 +1,158 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}Pomodoro - NeuroZen{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+  <h2 class="mb-4 text-center">Pomodoro Session</h2>
+  <a href="{% url 'dashboard' %}" class="btn btn-sm btn-outline-secondary mb-3">← Back</a>
+
+  <form id="sessionForm" class="text-center" method="post">
+    {% csrf_token %}
+    <div class="mb-3" style="max-width: 400px; margin: 0 auto;">
+      <label for="taskSelect" class="form-label">Choose a task (optional):</label>
+      <select id="taskSelect" class="form-select">
+        <option value="">— None —</option>
+        {% for task in tasks %}
+          <option value="{{ task.id }}">{{ task.title }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <h1 id="timer" class="display-1 fw-bold my-4">--:--</h1>
+    <p id="phaseLabel" class="text-muted fs-4 mb-4">Focus Time</p>
+
+    <div class="mb-4">
+      <button type="button" id="startBtn" class="btn btn-lg btn-primary">Start</button>
+      <button type="button" id="stopBtn" class="btn btn-lg btn-outline-danger ms-2" style="display: none;">Stop & Save</button>
+    </div>
+
+    <div class="text-center mb-4">
+      <a href="{% url 'pomodoro_history' %}" class="btn btn-sm btn-outline-secondary">View History</a>
+    </div>
+  </form>
+
+  <div id="noteSection" style="display:none; max-width: 500px; margin: 0 auto;">
+    <h4 class="text-center">Session completed!</h4>
+    <div class="mb-3">
+      <label for="noteInput" class="form-label">Add a note (optional):</label>
+      <textarea id="noteInput" class="form-control" rows="3"></textarea>
+    </div>
+    <button id="saveNoteBtn" class="btn btn-success w-100">Save</button>
+  </div>
+</div>
+
+<script>
+  const focusTime = {{ focus_time }} * 60;
+  const breakTime = {{ break_time }} * 60;
+  let timer = focusTime;
+  let interval = null;
+  let sessionId = null;
+  let currentPhase = 'focus';
+
+  const timerDisplay = document.getElementById('timer');
+  const startBtn = document.getElementById('startBtn');
+  const stopBtn = document.getElementById('stopBtn');
+  const phaseLabel = document.getElementById('phaseLabel');
+  const noteSection = document.getElementById('noteSection');
+  const saveNoteBtn = document.getElementById('saveNoteBtn');
+  const noteInput = document.getElementById('noteInput');
+  const taskSelect = document.getElementById('taskSelect');
+
+  function updateDisplay() {
+    const min = String(Math.floor(timer / 60)).padStart(2, '0');
+    const sec = String(timer % 60).padStart(2, '0');
+    timerDisplay.textContent = `${min}:${sec}`;
+  }
+
+  function startTimer(duration, phase) {
+    timer = duration;
+    currentPhase = phase;
+    phaseLabel.textContent = phase === 'focus' ? 'Focus Time' : 'Break Time';
+    updateDisplay();
+
+    interval = setInterval(() => {
+      timer--;
+      updateDisplay();
+
+      if (timer <= 0) {
+        clearInterval(interval);
+
+        if (phase === 'focus') {
+          startTimer(breakTime, 'break');
+        } else {
+          // Auto-end session after break
+          endSession("").then(() => {
+            showNoteSection();
+          });
+        }
+      }
+    }, 1000);
+  }
+
+  function showNoteSection() {
+    noteSection.style.display = 'block';
+    stopBtn.disabled = true;
+    phaseLabel.textContent = 'Session Ended';
+  }
+
+  function endSession(note) {
+  return fetch("{% url 'end_pomodoro' %}", {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': '{{ csrf_token }}',
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: `session_id=${sessionId}&note=${encodeURIComponent(note)}`
+  }).then(response => {
+    if (!response.ok) {
+      alert('Error saving session');
+    }
+  }).catch(() => {
+    alert('Network error while saving session');
+  });
+}
+
+  startBtn.addEventListener('click', () => {
+    const taskId = taskSelect.value;
+
+    fetch("{% url 'start_pomodoro' %}", {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}',
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: `task_id=${taskId}`
+    })
+    .then(res => res.json())
+    .then(data => {
+      sessionId = data.session_id;
+      startBtn.disabled = true;
+      stopBtn.style.display = 'inline-block';
+      startTimer(focusTime, 'focus');
+    })
+    .catch(() => alert('Error starting session'));
+  });
+
+  stopBtn.addEventListener('click', () => {
+    clearInterval(interval);
+    endSession("").then(() => {
+      showNoteSection();
+    });
+  });
+
+  saveNoteBtn.addEventListener('click', () => {
+    const note = noteInput.value;
+    endSession(note).then(() => {
+      saveNoteBtn.textContent = 'Saved!';
+      saveNoteBtn.disabled = true;
+    });
+  });
+
+  updateDisplay();
+</script>
+
+{% endblock %}
+
+
+
+

@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Login - NeuroZen{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="auth-wrapper d-flex justify-content-center align-items-center flex-grow-1">
+                <div class="card feature-card login-box">
+                    <div class="card-body p-5">
+                        <h2 class="text-center mb-4">Log in to NeuroZen</h2>
+
+                        <form method="post">
+                            {% csrf_token %}
+                            {% if form.non_field_errors %}
+                                <div class="alert alert-danger">
+                                    Please enter a correct username and password. Try again.
+                                </div>
+                            {% endif %}
+
+                            <div class="mb-3">
+                                <label class="form-label">Username</label>
+                                {{ form.username|add_class:"form-control" }}
+                                {{ form.username.errors }}
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Password</label>
+                                {{ form.password|add_class:"form-control" }}
+                                {{ form.password.errors }}
+                            </div>
+
+                            <div class="d-grid mt-3">
+                                <button type="submit" class="btn btn-primary btn-lg">Login</button>
+                            </div>
+                        </form>
+
+                        <div class="text-center mt-3">
+                            <a href="{% url 'password_reset' %}">Forgot your password?</a>
+                        </div>
+                        <div class="text-center mt-4">
+                            <p>Don't have an account?
+                                <a href="{% url 'register' %}" class="btn btn-outline">Register here</a>
+                            </p>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

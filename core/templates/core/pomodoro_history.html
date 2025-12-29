@@ -1,0 +1,44 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}Pomodoro History{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+  <h2 class="mb-4 text-center">Your Pomodoro Sessions</h2>
+
+  <div class="text-end mb-4">
+  <a href="{% url 'pomodoro' %}" class="btn btn-outline-primary">← Back to Pomodoro</a>
+  </div>
+
+  {% if history %}
+    {% for date, sessions in history.items %}
+      <div class="mb-4">
+        <h4 class="mb-2">{{ date }}</h4>
+
+        <div class="list-group">
+          {% for session in sessions %}
+            <div class="list-group-item">
+              <div class="d-flex justify-content-between">
+                  <strong>
+                    {% if session.task %}
+                      {{ session.task.title }}
+                    {% else %}
+                      No task selected
+                    {% endif %}
+                  </strong>
+                  <span class="text-muted">
+                    {{ session.start_time|date:"H:i" }} → {{ session.end_time|default:"⏳"|date:"H:i" }}
+                  </span>
+              </div>
+              {% if session.notes %}
+                <p class="text-muted mt-2 mb-0">{{ session.notes }}</p>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p class="text-muted text-center">You don't have any Pomodoro sessions yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

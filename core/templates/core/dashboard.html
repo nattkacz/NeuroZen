@@ -1,0 +1,180 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Dashboard - NeuroZen{% endblock %}
+
+{% block content %}
+<h2 class="mb-5 text-center">Welcome back, {{ user.username }} </h2>
+
+<div class="container-fluid px-4 h-100 d-flex flex-column">
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 flex-grow-1">
+    <!-- Pomodoro Timer -->
+    <div class="col d-flex">
+      <div class="card flex-fill h-100">
+        <div class="card-body text-center">
+          <h5 class="card-title">Pomodoro Timer</h5>
+          <p class="card-text text-muted">Stay focused using your {{ user.focus_time }} min timer.</p>
+          <a href="{% url 'pomodoro' %}" class="btn btn-primary btn-sm">Start Timer</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Today's Tasks -->
+    <div class="col d-flex">
+      <div class="card flex-fill h-100">
+        <div class="card-body text-center">
+          <h5 class="card-title">Today's Tasks</h5>
+          <p class="card-text text-muted">You have {{ today_tasks|length }} task{{ today_tasks|length|pluralize }} due today.</p>
+          <a href="{% url 'task_categories' %}" class="btn btn-outline btn-sm">View Tasks</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Daily Quote -->
+
+    <div class="col d-flex">
+      <div class="card flex-fill h-100">
+        <div class="card-body text-center">
+          {% if quote %}
+            <blockquote class="blockquote">
+              <p class="mb-2">"{{ quote.quote }}"</p>
+              <footer class="blockquote-footer">{{ quote.author }}</footer>
+            </blockquote>
+          {% else %}
+            <p class="text-muted">No quote available today.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Breathing Exercise -->
+    <div class="col d-flex">
+      <div class="card flex-fill h-100 text-center">
+        <div class="card-body">
+          {% if breathing_exercise %}
+            <p class="text-muted fw-semibold">{{ breathing_exercise.title }}</p>
+            <p class="text-muted small mb-2">{{ breathing_exercise.inhale_duration }}s inhale • {{ breathing_exercise.hold_duration }}s hold • {{ breathing_exercise.exhale_duration }}s exhale</p>
+            <div id="breathing-circle" class="breathing-circle mx-auto my-3"></div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Journal -->
+    <div class="col d-flex">
+      <div class="card flex-fill h-100">
+        <div class="card-body">
+          <h5 class="card-title">Today's Journal</h5>
+          {% if mood_entry %}
+            <p><strong>Mood:</strong> {{ mood_entry.get_mood_display }}</p>
+            <p><strong>Water intake:</strong> {{ mood_entry.water_intake }} cups</p>
+            <p><strong>Exercised:</strong> {{ mood_entry.exercised|yesno:"Yes,No" }}</p>
+            <p><strong>Diet:</strong> {{ mood_entry.diet_summary }}</p>
+            <p><strong>Notes:</strong> {{ mood_entry.notes|truncatechars:100 }}</p>
+          {% else %}
+            <p class="text-muted">No journal entry yet for today.</p>
+          {% endif %}
+          <div class="text-end mt-2">
+            <a href="{% url 'journal_view' %}" class="btn btn-sm btn-outline-primary">
+                {% if mood_entry %}Edit Journal{% else %}Add Journal Entry{% endif %}
+           </a>
+            <a href="{% url 'journal_history' %}" class="btn btn-sm btn-outline-secondary"> View History</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+   <!-- Progress -->
+    <div class="col d-flex">
+      <div class="card flex-fill h-100 text-center">
+        <div class="card-body">
+          <h5 class="card-title">Your Progress</h5>
+
+          <p class="text-muted mb-1">Completed {{ completed_today_count }} of {{ today_tasks_count }} tasks today</p>
+          <p class="text-muted mb-1">Pending Tasks (total): {{ pending_tasks_count }}</p>
+          <p class="text-muted mb-1">Total Points: {{ total_points }}</p>
+          <p class="text-muted mb-1">Pomodoros Today: {{ pomodoro_sessions }}</p>
+          <p class="text-muted">Streak: {{ streak_days }} day{{ streak_days|pluralize }}</p>
+
+          <a href="{% url 'daily_summary' %}" class="btn btn-outline-info mt-4"> Summary day</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const reminderFrequency = "{{ reminder_frequency }}";
+  const enableNotifications = {{ enable_notifications|yesno:"true,false" }};
+  const enableSound = {{ enable_sound|yesno:"true,false" }};
+
+  const messages = [
+    "💧 Time to hydrate!",
+    "🌿 Take a deep breath and reset.",
+    "🧘 Stretch your body – even 30 seconds helps.",
+    "📓 Reflect: What’s one small win from today?",
+    "☀️ Step away from the screen for 1 minute.",
+    "🧡 You’re doing great. Keep going!"
+  ];
+
+  function getIntervalMinutes(freq) {
+    switch (freq) {
+      case "15min": return 15;
+      case "30min": return 30;
+      case "hourly": return 60;
+      case "daily": return 1440;
+      default: return null;
+    }
+  }
+
+  function getRandomMessage() {
+    return messages[Math.floor(Math.random() * messages.length)];
+  }
+
+  function playSound() {
+    const audio = new Audio("{% static 'audio/reminder.mp3' %}");
+    audio.play();
+  }
+
+  function showReminder() {
+  if (!enableNotifications) return;
+
+  const message = getRandomMessage();
+  showToast(message);
+
+  if (enableSound) {
+    playSound();
+  }
+}
+
+function showToast(message) {
+  const toastMsg = document.getElementById("toast-message");
+  const toastElement = document.getElementById("reminderToast");
+
+  toastMsg.textContent = message;
+
+  const toast = new bootstrap.Toast(toastElement, {
+    autohide: false
+  });
+
+  toast.show();
+}
+
+
+  const minutes = getIntervalMinutes(reminderFrequency);
+  console.log("Reminder setup running. Frequency (min):", minutes);
+
+  if (minutes) {
+    setInterval(showReminder, minutes * 60 * 1000);
+  }
+</script>
+{% endblock %}
+
+
+
+
+
+

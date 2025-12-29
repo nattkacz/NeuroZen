@@ -1,0 +1,39 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}Journal History - NeuroZen{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+  <h2 class="mb-4 text-center"> Your Journal History</h2>
+  <a href="{% url 'dashboard' %}" class="btn btn-sm btn-outline-secondary">← Back </a>
+
+  {% if entries %}
+    {% for entry in entries %}
+      <div class="card mb-3 shadow-sm">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <h5 class="card-title mb-1">{{ entry.date }}</h5>
+            <span class="text-muted small">{{ entry.time|default:"–" }}</span>
+          </div>
+          <p class="mb-1"><strong>Mood:</strong> {{ entry.get_mood_display }}</p>
+          <p class="mb-1"><strong>Water:</strong> {{ entry.water_intake }} cups</p>
+          <p class="mb-1"><strong>Exercised:</strong> {{ entry.exercised|yesno:"Yes,No" }}</p>
+          {% if entry.diet_summary %}
+            <p class="mb-1"><strong>Diet:</strong> {{ entry.diet_summary }}</p>
+          {% endif %}
+          {% if entry.notes %}
+            <p class="text-muted mb-0"><strong>Notes:</strong> {{ entry.notes }}</p>
+          {% endif %}
+
+          <div class="text-end mt-2">
+           <a href="{% url 'journal_edit' entry.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+              <a href="{% url 'journal_delete' entry.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+          </div>
+
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p class="text-muted text-center">You don't have any journal entries yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

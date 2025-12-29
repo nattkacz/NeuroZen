@@ -1,0 +1,27 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}Task Categories - NeuroZen{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+  <h2 class="mb-4 text-center"> Categories</h2>
+  <a href="{% url 'dashboard' %}" class="btn btn-sm btn-outline-secondary">← Back </a>
+
+  {% if category_data %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+      {% for item in category_data %}
+        <div class="col d-flex">
+          <a href="{% url 'tasks_by_category' item.category.pk %}"
+             class="card text-center text-decoration-none text-dark flex-fill shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title">{{ item.category.name }}</h5>
+              <p class="text-muted mb-0">{{ item.task_count }} task{{ item.task_count|pluralize }}</p>
+            </div>
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-muted text-center">You don't have any categories yet.</p>
+  {% endif %}
+</div>
+{% endblock %}
