@@ -6,12 +6,12 @@
 
 ## Key Features
 
-* ** AI Daily Insights:** Leverages **OpenAI GPT** to analyze your day and provide supportive, personalized feedback.
-* ** Dynamic Dashboard:** A real-time overview of tasks, Pomodoro sessions, and current mood.
-* ** Pomodoro Focus Timer:** Integrated task-linked timer to boost productivity without burnout.
-* ** Interactive Breathing:** Customizable breathing exercises (Inhale/Hold/Exhale) managed via database.
-* ** Mental Health Journal:** Secure mood logging and personal notes.
-* ** Gamification:** Point system and streaks to encourage consistent wellness habits.
+* **AI Daily Insights:** Leverages **OpenAI GPT** to analyze your day and provide supportive, personalized feedback.
+* **Dynamic Dashboard:** A real-time overview of tasks, Pomodoro sessions, and current mood.
+* **Pomodoro Focus Timer:** Integrated task-linked timer to boost productivity without burnout.
+* **Interactive Breathing:** Customizable breathing exercises (Inhale/Hold/Exhale) managed via database.
+* **Mental Health Journal:** Secure mood logging and personal notes.
+* **Gamification:** Point system and streaks to encourage consistent wellness habits.
 
 ---
 
