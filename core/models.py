@@ -71,7 +71,7 @@ class Category(models.Model):
         'other': '#95A5A6',
     }
 
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
     color = models.CharField(max_length=7, default='#95A5A6')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='categories')
     is_default = models.BooleanField(default=False)

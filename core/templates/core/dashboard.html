@@ -26,6 +26,7 @@
           <h5 class="card-title">Today's Tasks</h5>
           <p class="card-text text-muted">You have {{ today_tasks|length }} task{{ today_tasks|length|pluralize }} due today.</p>
           <a href="{% url 'task_categories' %}" class="btn btn-outline btn-sm">View Tasks</a>
+          <a href="{% url 'task_create' %}" class="btn btn-outline btn-sm">Create Task</a>
         </div>
       </div>
     </div>

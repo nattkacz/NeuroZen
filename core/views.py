@@ -12,7 +12,7 @@ from django.utils import timezone
 from django.utils.timezone import localdate
 from django.db.models import Sum
 from django.conf import settings
-import openai
+from openai import OpenAI
 from django.core.mail import send_mail
 from django.http import HttpResponse
 
@@ -70,7 +70,7 @@ def dashboard(request):
 
 
     today_tasks_qs = Task.objects.filter(
-        category__user=user,
+        user=user,
         due_date__date=today
     ).order_by('priority', 'due_date')
 
@@ -114,15 +114,13 @@ def dashboard(request):
 def task_categories(request):
     user = request.user
     categories = Category.objects.filter(user=user, is_active=True)
-
     category_data = []
     for category in categories:
         task_count = Task.objects.filter(user=user, category=category).count()
         category_data.append({'category': category, 'task_count': task_count})
-
-    context = {
-        'category_data': category_data
-    }
+        context = {
+                    'category_data': category_data
+                    }
     return render(request, 'core/task_categories.html', context)
 
 @login_required
@@ -381,75 +379,45 @@ def reward_claim(request, pk):
     return redirect('reward_list')
 
 
-
 @login_required
 def daily_summary_ai(request):
     user = request.user
     today = timezone.localdate()
 
-
     existing = AISummary.objects.filter(user=user, date=today).first()
     if existing:
-        return render(request, 'core/daily_summary.html', {
-            'ai_summary': existing.content,
-        })
+        return render(request, 'core/daily_summary.html', {'ai_summary': existing.content})
 
-
-    tasks_today = Task.objects.filter(category__user=user, due_date__date=today)
+    tasks_today = Task.objects.filter(user=user, due_date__date=today)
     completed = tasks_today.filter(status='completed')
     pending = tasks_today.exclude(status='completed')
     pomodoros = PomodoroSession.objects.filter(user=user, start_time__date=today).count()
     mood_entry = MoodEntry.objects.filter(user=user, date=today).first()
 
     prompt = f"""
-    The user's name is {user.username}. Please include it at the beginning of the summary to make it feel personal and direct.
-
-    Here's how their day went on {today.strftime('%B %d, %Y')}:
-
-    • Tasks scheduled: {tasks_today.count()}
-    • Completed: {completed.count()}
-    • Still pending: {pending.count()}
-    • Pomodoro sessions done: {pomodoros}
-    • Mood: {mood_entry.mood if mood_entry else 'No entry'}
-    • Journal note: {mood_entry.note if mood_entry else '—'}
-
-    Now please:
-    1. Write a warm, emotionally supportive summary using the user's name.
-    2. Celebrate even small wins.
-    3. Encourage without judgment.
-    4. Offer one kind, actionable suggestion for tomorrow.
-
-    The tone should feel like it’s coming from a close, trusted friend or coach who truly cares.
+    The user's name is {user.username}. [Tutaj reszta Twojego promptu...]
     """
 
-    openai.api_key = settings.OPENAI_API_KEY
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {"role": "system", "content": "You are the best, caring, supportive coach."},
-            {"role": "user", "content": prompt}
-        ]
-    )
-
-    ai_summary = response['choices'][0]['message']['content']
-
-
-    AISummary.objects.create(user=user, date=today, content=ai_summary)
-
-    return render(request, 'core/daily_summary.html', {
-        'ai_summary': ai_summary,
-    })
-
-
-def test_email(request):
     try:
-        send_mail(
-            subject='Test NeuroZen Email',
-            message='If you see this, your email config works.',
-            from_email=None,  # domyślnie DEFAULT_FROM_EMAIL
-            recipient_list=['neurozen1234app@gmail.com'],
-            fail_silently=False,
+        client = OpenAI(api_key=settings.OPENAI_API_KEY)
+
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are the best, caring, supportive coach."},
+                {"role": "user", "content": prompt}
+            ]
         )
-        return HttpResponse("✅ Email sent successfully.")
+        ai_summary = response.choices[0].message.content
+
+        AISummary.objects.create(user=user, date=today, content=ai_summary)
+
+        return render(request, 'core/daily_summary.html', {'ai_summary': ai_summary})
+
     except Exception as e:
-        return HttpResponse(f"❌ Email failed: {e}")
+        print(f"Error OpenAI: {e}")
+
+        messages.error(request,
+                       "Your AI assistant is taking a short coffee break. Please try generating your summary again in a moment!")
+        return redirect('dashboard')
+
